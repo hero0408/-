@@ -32,12 +32,12 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install git+https://github.com/calesthio/OpenMontage.git || true
 
-      - name: [Step 1] Generate Episode Input Data via Python
+      - name: Step 1 Generate Episode Input Data via Python
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python main.py
 
-      - name: [Step 2] Execute OpenMontage CLI Rendering
+      - name: Step 2 Execute OpenMontage CLI Rendering
         env:
           KLING_API_KEY: ${{ secrets.KLING_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
@@ -51,7 +51,7 @@ jobs:
             --input track_input.json \
             --output output_final.mp4 || python -c "print('Fallback rendering completed')"
 
-      - name: [Step 3] Auto Upload to YouTube
+      - name: Step 3 Auto Upload to YouTube
         if: success()
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
