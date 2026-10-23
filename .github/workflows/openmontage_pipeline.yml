@@ -12,18 +12,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 메인 코드 체크아웃
       - name: Checkout Main Repository
         uses: actions/checkout@v4
 
-      # 2. OpenMontage 프레임워크 저장소 독립 체크아웃
       - name: Checkout OpenMontage Core
         uses: actions/checkout@v4
         with:
           repository: 'calesthio/OpenMontage'
           path: 'openmontage_engine'
 
-      # 3. Python 3.11 및 Node.js 18 (OpenMontage 렌더링용) 설정
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
@@ -35,8 +32,7 @@ jobs:
         with:
           node-version: '18'
 
-      # 4. 시스템 및 파이썬 의존성 설치
-      - name: Install System Dependencies (FFmpeg)
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
@@ -47,14 +43,12 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f openmontage_engine/requirements.txt ]; then pip install -r openmontage_engine/requirements.txt; fi
 
-      # 5. 파이프라인 데이터 생성
-      - name: [Step 1] Generate Episode Input Data
+      - name: Step 1 Generate Episode Input Data
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python main.py
 
-      # 6. OpenMontage 엔진 실행
-      - name: [Step 2] Execute OpenMontage Video Pipeline
+      - name: Step 2 Execute OpenMontage Video Pipeline
         env:
           KLING_API_KEY: ${{ secrets.KLING_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
@@ -63,14 +57,12 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           FISH_AUDIO_API_KEY: ${{ secrets.FISH_AUDIO_API_KEY }}
         run: |
-          # OpenMontage 모듈 직접 호출
           python -m openmontage_engine.cli render \
             --template openmontage_config/template.json \
             --input track_input.json \
             --output output_final.mp4 || python -c "print('Pipeline stage 2 gracefully finished.')"
 
-      # 7. 유튜브 업로드
-      - name: [Step 3] Auto Upload to YouTube
+      - name: Step 3 Auto Upload to YouTube
         if: success()
         env:
           YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
@@ -79,7 +71,6 @@ jobs:
         run: |
           python -c "import youtube_uploader; youtube_uploader.upload_private_video('output_final.mp4')"
 
-      # 8. 빌드 아티팩트 저장
       - name: Upload Rendered Video Artifact
         if: always()
         uses: actions/upload-artifact@v4
