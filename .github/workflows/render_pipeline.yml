@@ -3,7 +3,7 @@ name: OpenMontage Automated Video Pipeline
 on:
   schedule:
     - cron: '0 15 * * 1'   # 매주 월요일 KST 00:00 (UTC 15:00) 자동 실행
-  workflow_dispatch:       # 수동 실행 지원
+  workflow_dispatch:       # GitHub 웹상 수동 실행 버튼 지원
 
 jobs:
   build-and-render:
@@ -36,7 +36,7 @@ jobs:
 
       - name: [Step 2] Execute OpenMontage CLI Rendering
         env:
-          # OpenMontage가 전달받아 자체 처리하도록 API Key 환경변수 매핑
+          # OpenMontage CLI가 받아 자체 처리하도록 환경변수 매핑
           KLING_API_KEY: ${{ secrets.KLING_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           LUMA_API_KEY: ${{ secrets.LUMA_API_KEY }}
