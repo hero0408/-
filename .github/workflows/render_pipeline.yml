@@ -29,7 +29,7 @@ jobs:
       - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || true
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: [Step 1] Generate Episode Input Data via Python
         env:
@@ -45,7 +45,7 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           FISH_AUDIO_API_KEY: ${{ secrets.FISH_AUDIO_API_KEY }}
         run: |
-          python -c "import os; print('OpenMontage input dataset generated successfully.')"
+          python -c "print('OpenMontage render execution mock completed successfully.')"
 
       - name: [Step 3] Auto Upload to YouTube
         if: success()
