@@ -1,0 +1,7 @@
+edge-tts>=7.3.0
+moviepy>=2.2.0
+openai-whisper
+google-api-python-client
+google-auth-oauthlib
+requests
+gradio_client
