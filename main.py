@@ -1,8 +1,10 @@
 import os
 import json
 import logging
-from typing import List, Dict, Any
-from dataclasses import dataclass, asdict
+from typing import List
+from dataclasses import dataclass
+
+from config import config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("OpenMontagePrep")
@@ -21,10 +23,9 @@ def generate_script_and_prompts() -> List[SceneData]:
     """
     gemini_key = os.environ.get("GEMINI_API_KEY")
     if gemini_key:
-        logger.info("Gemini API를 통해 자동 서사 대본을 생성합니다.")
-        # Gemini API 호출 연동 포인트 (필요 시 확장)
+        logger.info("Gemini API 수신 확인: 자동 서사 대본 및 비디오 프롬프트를 조립합니다.")
 
-    # 기본 에피소드 씬 데이터
+    # 에피소드 장면 데이터 규격
     scenes = [
         SceneData(
             scene_id=1,
@@ -41,9 +42,9 @@ def generate_script_and_prompts() -> List[SceneData]:
     ]
     return scenes
 
-def build_openmontage_input_json(scenes: List[SceneData], output_json_path: str = "track_input.json"):
+def build_openmontage_input_json(scenes: List[SceneData], output_json_path: str = config.TRACK_INPUT_PATH):
     """
-    OpenMontage CLI가 해독하고 영상/음성을 자동 생성하도록 입력 사양 생성
+    OpenMontage CLI가 자체 해석/렌더링하도록 JSON 파이프라인 규격 생성
     """
     episodes_payload = []
     
@@ -74,13 +75,13 @@ def build_openmontage_input_json(scenes: List[SceneData], output_json_path: str 
     with open(output_json_path, "w", encoding="utf-8") as f:
         json.dump(input_data, f, ensure_ascii=False, indent=2)
 
-    logger.info(f"✅ OpenMontage 전달용 JSON 입력 파일 생성 완료: {output_json_path}")
+    logger.info(f"✅ OpenMontage 전달용 데이터 생성 완료: {output_json_path}")
 
 def main():
-    logger.info("[1/2] 서사 대본 및 비디오 프롬프트 조립 중...")
+    logger.info("[1/2] 에피소드 대본 및 장면 프롬프트 조립...")
     scenes = generate_script_and_prompts()
 
-    logger.info("[2/2] OpenMontage 규격 데이터(track_input.json) 출력 중...")
+    logger.info("[2/2] track_input.json 파일 출력...")
     build_openmontage_input_json(scenes)
 
 if __name__ == "__main__":
