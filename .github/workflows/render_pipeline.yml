@@ -1,11 +1,11 @@
 name: OpenMontage Automated Video Pipeline
 
 on:
-  push:                    # 👈 한 번 자동 등록을 유도하기 위해 추가
+  push:
     branches: [ main ]
   schedule:
     - cron: '0 15 * * 1'
-  workflow_dispatch:      # 수동 실행
+  workflow_dispatch:
 
 jobs:
   build-and-render:
@@ -30,7 +30,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          # PyPI 패키지가 없을 경우 GitHub 저장소에서 direct install
           pip install git+https://github.com/calesthio/OpenMontage.git || true
 
       - name: [Step 1] Generate Episode Input Data via Python
