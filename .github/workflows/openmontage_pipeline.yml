@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install System Dependencies
+      - name: Install System Dependencies (FFmpeg)
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
@@ -50,6 +50,7 @@ jobs:
 
       - name: Step 2 Execute OpenMontage Video Pipeline
         env:
+          PYTHONPATH: ${{ github.workspace }}/openmontage_engine
           KLING_API_KEY: ${{ secrets.KLING_API_KEY }}
           MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
           LUMA_API_KEY: ${{ secrets.LUMA_API_KEY }}
@@ -57,10 +58,10 @@ jobs:
           ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
           FISH_AUDIO_API_KEY: ${{ secrets.FISH_AUDIO_API_KEY }}
         run: |
-          python -m openmontage_engine.cli render \
+          python -m openmontage render \
             --template openmontage_config/template.json \
             --input track_input.json \
-            --output output_final.mp4 || python -c "print('Pipeline stage 2 gracefully finished.')"
+            --output output_final.mp4
 
       - name: Step 3 Auto Upload to YouTube
         if: success()
