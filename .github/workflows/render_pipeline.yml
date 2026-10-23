@@ -1,9 +1,11 @@
 name: OpenMontage Automated Video Pipeline
 
 on:
+  push:                    # 👈 한 번 자동 등록을 유도하기 위해 추가
+    branches: [ main ]
   schedule:
-    - cron: '0 15 * * 1'   # 매주 월요일 KST 00:00 (UTC 15:00)
-  workflow_dispatch:       # 수동 실행 버튼
+    - cron: '0 15 * * 1'
+  workflow_dispatch:      # 수동 실행
 
 jobs:
   build-and-render:
