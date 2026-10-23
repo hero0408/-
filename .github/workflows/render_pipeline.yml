@@ -1,0 +1,70 @@
+name: OpenMontage Automated Video Pipeline
+
+on:
+  schedule:
+    - cron: '0 15 * * *'  # 매일 한국 시간 기준 00:00 (UTC 15:00) 자동 실행
+  workflow_dispatch:      # 수동 실행 지원
+
+jobs:
+  build-and-render:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install System Dependencies (FFmpeg)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verify Environment Secrets
+        run: |
+          python -c "
+          import os
+          secrets = ['GEMINI_API_KEY', 'ELEVENLABS_API_KEY', 'FISH_AUDIO_API_KEY', 'KLING_API_KEY', 'RUNWAY_API_KEY', 'YOUTUBE_REFRESH_TOKEN']
+          for s in secrets:
+              status = 'LOADED' if os.environ.get(s) else 'MISSING'
+              print(f'{s}: {status}')
+          "
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          FISH_AUDIO_API_KEY: ${{ secrets.FISH_AUDIO_API_KEY }}
+          KLING_API_KEY: ${{ secrets.KLING_API_KEY }}
+          RUNWAY_API_KEY: ${{ secrets.RUNWAY_API_KEY }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+
+      - name: Execute Main Pipeline
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          FISH_AUDIO_API_KEY: ${{ secrets.FISH_AUDIO_API_KEY }}
+          KLING_API_KEY: ${{ secrets.KLING_API_KEY }}
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          LUMA_API_KEY: ${{ secrets.LUMA_API_KEY }}
+          RUNWAY_API_KEY: ${{ secrets.RUNWAY_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }} # HuggingFace 무료 비디오 모델 연동용
+          YOUTUBE_CLIENT_ID: ${{ secrets.YOUTUBE_CLIENT_ID }}
+          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
+          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
+        run: python main.py
+
+      - name: Upload Rendered Video Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-episode-video
+          path: output_final.mp4
+          retention-days: 7
